@@ -4,13 +4,15 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ✅ REQUIRED for React frontend
   app.enableCors({
-    origin: '*', // allow all origins (safe for demo)
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  await app.listen(process.env.PORT || 3000);
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+
+  console.log(`🚀 Nest app running on port ${port}`);
 }
 bootstrap();
