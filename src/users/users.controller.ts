@@ -16,35 +16,37 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // CREATE USER (public)
+  // ✅ CREATE USER (public)
   @Post()
   create(@Body() body: CreateUserDto) {
-    return this.usersService.create(body);
+    return this.usersService.create(body.email, body.password);
   }
 
-  // GET ALL USERS (protected)
+  // ✅ GET ALL USERS (JWT protected)
   @UseGuards(AuthGuard('jwt'))
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
-  // GET USER BY ID (public)
+  // ✅ GET USER BY ID
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(Number(id));
   }
 
-  // UPDATE USER (public for now)
+  // ✅ UPDATE USER
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Partial<CreateUserDto>) {
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<CreateUserDto>,
+  ) {
     return this.usersService.update(Number(id), body);
   }
 
-  // DELETE USER (public for now)
+  // ✅ DELETE USER
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(Number(id));
   }
 }
-
