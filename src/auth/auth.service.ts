@@ -14,21 +14,20 @@ export class AuthService {
   private readonly adminEmail = 'prajwaladmin@email.com';
   private readonly adminPassword = 'PrajwalM-2002';
 
+  // LOGIN
   async login(email: string, password: string) {
-    // ✅ ADMIN LOGIN
+    // ADMIN LOGIN
     if (email === this.adminEmail && password === this.adminPassword) {
-      const payload = {
-        email: this.adminEmail,
-        role: 'admin',
-      };
-
       return {
-        access_token: this.jwtService.sign(payload),
+        access_token: this.jwtService.sign({
+          email,
+          role: 'admin',
+        }),
         role: 'admin',
       };
     }
 
-    // ✅ USER LOGIN
+    // USER LOGIN
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -39,23 +38,19 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: 'user',
-    };
-
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign({
+        sub: user.id,
+        email: user.email,
+        role: 'user',
+      }),
       role: 'user',
     };
   }
 
+  // REGISTER
   async register(email: string, password: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return this.usersService.create({
-      email,
-      password: hashedPassword,
-    });
+    await this.usersService.create(email, password);
+    return { message: 'User registered successfully' };
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -11,21 +11,26 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  // CREATE USER (with password hashing)
-  async create(data: Partial<User>) {
-    const hashedPassword = await bcrypt.hash(data.password as string, 10);
+  // CREATE USER
+  async create(email: string, password: string) {
+    const existing = await this.findByEmail(email);
+    if (existing) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = this.userRepository.create({
-      email: data.email,
+      email,
       password: hashedPassword,
     });
 
     return this.userRepository.save(user);
   }
 
-  // FIND USER BY EMAIL (used in AuthService)
+  // FIND USER BY EMAIL
   findByEmail(email: string) {
-    return this.userRepository.findOneBy({ email });
+    return this.userRepository.findOne({ where: { email } });
   }
 
   // GET ALL USERS
@@ -47,7 +52,6 @@ export class UsersService {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
     }
-
     await this.userRepository.update(id, data);
     return this.findOne(id);
   }
